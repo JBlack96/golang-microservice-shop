@@ -37,8 +37,13 @@ func main() {
 		c.JSON(http.StatusOK, items)
 	})
 
-	// todo -> implement route params
-	r.GET("/items/itemidhere", func(c *gin.Context) {
+	r.GET("/items/:id", func(c *gin.Context) {
+		var item domain.InventoryItem
+		if err := c.ShouldBindUri(&item); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "invalid item id"})
+			return
+		}
+
 		item, err := ims.GetSingleItem("item id goes here")
 		if err != nil {
 			//todo do something with this error
@@ -48,13 +53,13 @@ func main() {
 		c.JSON(http.StatusOK, item)
 	})
 
-	// todo -> implement route params
-	r.POST("/items/itemidhere", func(c *gin.Context) {
+	r.POST("/items", func(c *gin.Context) {
 		item, err := ims.AddSingleItem(domain.InventoryItem{})
 		if err != nil {
 			//todo do something with this error
 			c.JSON(http.StatusInternalServerError, item)
 		}
+
 		c.JSON(http.StatusOK, item)
 	})
 
