@@ -10,7 +10,7 @@ interface ItemCardProps {
 export const ItemCard = ({id, name, price, img}: ItemCardProps) =>
     <div key={id} className="card basis-1/3">
         <figure className="px-10 pt-10">
-            <img src={img} alt="Shoes" className="rounded-xl"/>
+            <img src={img} alt={name} className="rounded-xl"/>
         </figure>
         <div className="card-body items-center text-center">
             <h2 className="card-title">{name}</h2>
