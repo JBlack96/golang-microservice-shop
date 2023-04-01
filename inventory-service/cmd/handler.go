@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/JBlack96/golang-microservice-shop/inventory-service/internal/domain"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/google/uuid"
 	"net/http"
 )
 
@@ -23,10 +26,11 @@ func (h *Handler) GetItem(c *gin.Context) {
 		return
 	}
 
-	item, err := h.ims.GetSingleItem("item id goes here")
+	item, err := h.ims.GetSingleItem(item.ID)
 	if err != nil {
 		//todo do something with this error
 		c.JSON(http.StatusInternalServerError, item)
+		return
 	}
 
 	c.JSON(http.StatusOK, item)
@@ -37,17 +41,42 @@ func (h *Handler) GetItems(c *gin.Context) {
 	if err != nil {
 		//todo do something with this error
 		c.JSON(http.StatusInternalServerError, items)
+		return
 	}
 
 	c.JSON(http.StatusOK, items)
 }
 
 func (h *Handler) AddItem(c *gin.Context) {
-	item, err := h.ims.AddSingleItem(domain.InventoryItem{})
+	var newItem AddInventoryItemBody
+	if err := c.ShouldBindBodyWith(&newItem, binding.JSON); err != nil {
+		fmt.Println(err.Error())
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	item := domain.InventoryItem{
+		ID:          uuid.New().String(),
+		Name:        newItem.Name,
+		Price:       newItem.Price,
+		Description: newItem.Description,
+		ImgSrc:      newItem.ImgSrc,
+	}
+
+	item, err := h.ims.AddSingleItem(item)
 	if err != nil {
-		//todo do something with this error
-		c.JSON(http.StatusInternalServerError, item)
+		fmt.Println(err.Error())
+		c.JSON(http.StatusInternalServerError, nil)
+		return
 	}
 
 	c.JSON(http.StatusOK, item)
+}
+
+type AddInventoryItemBody struct {
+	Name        string  `json:"name"`
+	Price       float32 `json:"price"`
+	ImgSrc      string  `json:"imgSrc"`
+	Description string  `json:"description"`
+	// todo -> think about managing stock => (tradeoff of stock management within inventory service vs dedicated stock management service)
 }

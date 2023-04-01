@@ -9,18 +9,20 @@ import (
 )
 
 type InventoryManagementService struct {
-	db dynamodbiface.DynamoDBAPI
+	tableName string
+	db        dynamodbiface.DynamoDBAPI
 }
 
-func New(db dynamodbiface.DynamoDBAPI) *InventoryManagementService {
+func New(db dynamodbiface.DynamoDBAPI, tableName string) *InventoryManagementService {
 	return &InventoryManagementService{
-		db: db,
+		db:        db,
+		tableName: tableName,
 	}
 }
 
 func (ims *InventoryManagementService) GetAllItems() ([]domain.InventoryItem, error) {
 	input := &dynamodb.ScanInput{
-		TableName: aws.String("inventory"),
+		TableName: aws.String(ims.tableName),
 	}
 
 	output, err := ims.db.Scan(input)
@@ -33,12 +35,12 @@ func (ims *InventoryManagementService) GetAllItems() ([]domain.InventoryItem, er
 		return []domain.InventoryItem{}, err
 	}
 
-	return []domain.InventoryItem{}, nil
+	return items, nil
 }
 
 func (ims *InventoryManagementService) GetSingleItem(ID string) (domain.InventoryItem, error) {
 	input := &dynamodb.GetItemInput{
-		TableName: aws.String("inventory"),
+		TableName: aws.String(ims.tableName),
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {S: aws.String(ID)},
 		},
@@ -64,7 +66,7 @@ func (ims *InventoryManagementService) AddSingleItem(item domain.InventoryItem) 
 	}
 
 	input := &dynamodb.PutItemInput{
-		TableName:           aws.String("inventory"),
+		TableName:           aws.String(ims.tableName),
 		Item:                marshalledItem,
 		ConditionExpression: aws.String("attribute_not_exists(id)"),
 	}

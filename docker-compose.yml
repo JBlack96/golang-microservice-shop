@@ -1,0 +1,29 @@
+version: "3"
+services:
+  inventory-management-service:
+    build:
+      context: ./inventory-service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    container_name: inventory-management-service
+    environment:
+      - ENVIRONMENT=local
+      - AWS_ACCESS_KEY_ID=KEY
+      - AWS_SECRET_ACCESS_KEY=SECRET
+      - AWS_REGION=eu-west-1
+    networks:
+      - default
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - DEFAULT_REGION=eu-west-1
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - default
+networks:
+  default:
